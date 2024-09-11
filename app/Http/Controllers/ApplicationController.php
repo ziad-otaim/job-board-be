@@ -51,7 +51,7 @@ class ApplicationController extends Controller
             'application' => $application,
         ]);
     }
-    
+
 
     public function accept($id)
 {
@@ -79,19 +79,24 @@ public function reject($id)
         $application = Application::where('job_id', $job->id)
             ->where('user_id', $request->user()->id)
             ->first();
-
+    
         if ($application) {
-            if (Storage::disk('public')->exists($application->resume)) {
-                Storage::disk('public')->delete($application->resume);
+            // Get the relative path of the resume by removing the storage URL part
+            $resumePath = str_replace('/storage', '', parse_url($application->resume, PHP_URL_PATH));
+    
+            // Check if the resume file exists and delete it
+            if (Storage::disk('public')->exists($resumePath)) {
+                Storage::disk('public')->delete($resumePath);
             }
-            
+    
+            // Delete the application record
             $application->delete();
-
+    
             return response()->json([
                 'message' => 'Application cancelled successfully'
-            ]);
+            ], 200);
         }
-
+    
         return response()->json([
             'message' => 'Application not found'
         ], 404);
