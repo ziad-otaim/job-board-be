@@ -15,14 +15,19 @@ class JobController extends Controller
         $location = $request->input('location');
         $category = $request->input('category');
         $search = $request->input('search');
+        $status = $request->input('status');
 
         // Query the jobs with optional filters
         $query = Job::query();
 
+        if ($status) {
+            $query->where('status', 'like', '%' . $status . '%');
+        }
+
         if ($employer_id) {
             $query->where('user_id', 'like', '%' . $employer_id . '%');
         }
-        
+
         if ($location) {
             $query->where('location', 'like', '%' . $location . '%');
         }
@@ -64,7 +69,7 @@ class JobController extends Controller
             'category' => $request->category,
             'salary' => $request->salary,
             'deadline' => $request->deadline,
-            'status' => 'open',
+            'status' => 'pending',
         ]);
 
         return response()->json([
